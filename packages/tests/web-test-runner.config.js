@@ -115,19 +115,28 @@ Valid examples:
 See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all options.`);
     }
     const [, platformName, browserName, browserVersion] = match;
-    return [
-      makeSauceLauncherOnce()({
-        browserName,
-        browserVersion,
-        platformName,
-        'sauce:options': {
-          name: `lit tests [${mode}]`,
-          build: `${process.env.GITHUB_REF ?? 'local'} build ${
-            process.env.GITHUB_RUN_NUMBER ?? ''
-          }`,
-        },
-      }),
-    ];
+    const launcher = makeSauceLauncherOnce()({
+      browserName,
+      browserVersion,
+      platformName,
+      'sauce:options': {
+        name: `lit tests [${mode}]`,
+        build: `${process.env.GITHUB_REF ?? 'local'} build ${
+          process.env.GITHUB_RUN_NUMBER ?? ''
+        }`,
+      },
+    });
+    // Force IE concurrency to 1 (don't use iframes), to avoid flaky tests
+    if (browserName === 'Internet Explorer') {
+      launcher.concurrency = 1;
+      // WebdriverLauncher looks at the global `this.config.concurrency` rather
+      // than `this.concurrency`, so we override it in initialize to match
+      const initialize = launcher.initialize;
+      launcher.initialize = function (config) {
+        return initialize.call(this, {...config, concurrency: 1});
+      };
+    }
+    return [launcher];
   }
 
   return [
