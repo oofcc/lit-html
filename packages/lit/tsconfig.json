@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "es2020",
     "module": "es2015",
     "lib": ["es2020", "DOM", "DOM.Iterable"],
@@ -21,5 +22,11 @@
     "importHelpers": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": []
+  "exclude": ["src/polyfill-support.ts"],
+  "references": [
+    {"path": "./tsconfig.polyfill-support.json"},
+    {"path": "../lit-html"},
+    {"path": "../reactive-element"},
+    {"path": "../lit-element"}
+  ]
 }
